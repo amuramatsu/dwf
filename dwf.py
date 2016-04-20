@@ -224,7 +224,7 @@ class DWFError(RuntimeError):
     def __init__(self, error, errormsg, others=None):
         self.error = error
         self.errormsg = errormsg
-        self.function = function
+        self.others = others
     def __str__(self):
         return "ERROR(%d): %s" % (
             self.error, self.errormsg)
@@ -1927,9 +1927,9 @@ class DwfAnalogIn(Dwf):
         if isinstance(idxDevice, Dwf):
             self.hdwf = idxDevice.hdwf
         else:
-            super(Dwf, self).__init__(idxDevice, idxCfg)
+            super(DwfAnalogIn, self).__init__(idxDevice, idxCfg)
     def reset(self, parent=False):
-        if parent: super(Dwf, self).reset()
+        if parent: super(DwfAnalogIn, self).reset()
         return FDwfAnalogInReset(self.hdwf)
     def configure(self, reconfigure, start):
         return FDwfAnalogInConfigure(self.hdwf, reconfigure, start)
@@ -2279,9 +2279,9 @@ class DwfAnalogOut(Dwf):
         if isinstance(idxDevice, Dwf):
             self.hdwf = idxDevice.hdwf
         else:
-            super(Dwf, self).__init__(idxDevice, idxCfg)
+            super(DwfAnalogIn, self).__init__(idxDevice, idxCfg)
     def reset(self, idxChannel=-1, parent=False):
-        if parent: super(Dwf, self).reset()
+        if parent: super(DwfAnalogIn, self).reset()
         return FDwfAnalogOutReset(self.hdwf, idxChannel)
     def configure(self, idxChannel, start):
         return FDwfAnalogOutConfigure(self.hdwf, idxChannel, start)
@@ -2306,9 +2306,9 @@ class DwfAnalogIO(Dwf):
         if isinstance(idxDevice, Dwf):
             self.hdwf = idxDevice.hdwf
         else:
-            super(Dwf, self).__init__(idxDevice, idxCfg)
+            super(DwfAnalogIO, self).__init__(idxDevice, idxCfg)
     def reset(self, parent=False):
-        if parent: super(Dwf, self).reset()
+        if parent: super(DwfAnalogIO, self).reset()
         return FDwfAnalogIOReset(self.hdwf)
     def configure(self):
         return FDwfAnalogIOConfigure(self.hdwf)
@@ -2354,9 +2354,9 @@ class DwfDigitalIO(Dwf):
         if isinstance(idxDevice, Dwf):
             self.hdwf = idxDevice.hdwf
         else:
-            super(Dwf, self).__init__(idxDevice, idxCfg)
+            super(DwfDigitalIO, self).__init__(idxDevice, idxCfg)
     def reset(self, parent=False):
-        if parent: super(Dwf, self).reset()
+        if parent: super(DwfDigitalIO, self).reset()
         return FDwfDigitalIOReset(sefl.hdwf)
     def configure(self):
         return FDwfDigitalIOConfigure(self.hdwf)
@@ -2404,9 +2404,9 @@ class DwfDigitalIn(Dwf):
         if isinstance(idxDevice, Dwf):
             self.hdwf = idxDevice.hdwf
         else:
-            super(Dwf, self).__init__(idxDevice, idxCfg)
+            super(DwfDigitalIn, self).__init__(idxDevice, idxCfg)
     def reset(self, parent=False):
-        if parent: super(Dwf, self).reset()
+        if parent: super(DwfDigitalIn, self).reset()
         return FDwfDigitalInReset(self.hdwf)
     def configure(self, reconfigure, start):
         return FDwfDigitalInConfigure(self.hdwf, reconfigure, start)
@@ -2531,9 +2531,9 @@ class DwfDigitalOut(Dwf):
         if isinstance(idxDevice, Dwf):
             self.hdwf = idxDevice.hdwf
         else:
-            super(Dwf, self).__init__(idxDevice, idxCfg)
+            super(DwfDigitalOut, self).__init__(idxDevice, idxCfg)
     def reset(self, parent=False):
-        if parent: super(Dwf, self).reset()
+        if parent: super(DwfDigitalOut, self).reset()
         return FDwfDigitalOutReset(self.hdwf)
     def configure(self, start):
         return FDwfDigitalOutConfigure(self.hdwf, start)
