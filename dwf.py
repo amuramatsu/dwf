@@ -312,7 +312,7 @@ def FDwfEnumDeviceName(idxDevice, szDeviceName=None):
 _xdefine("FDwfEnumSN",
          (c_int, c_char_p,), ((_ARGIN, "idxDevice"), (_ARGIN, "szSN"),))
 def FDwfEnumSN(idxDevice, szSN=None):
-    if szSn is not None: return _FDwfEnumSN(idxDevice, szSN)
+    if szSN is not None: return _FDwfEnumSN(idxDevice, szSN)
     szSN = create_string_buffer(32)
     _FDwfEnumSN(idxDevice, szSN)
     return _mkstring(szSN)
@@ -1570,10 +1570,10 @@ def FDwfDigitalOutDataSet(hdwf, idxChannel, rgBits, countOfBits=None):
                 mask = 0x01
                 byte = 0x00
                 index += 1
-        rbBits_[index] = byte
+        rgBits_[index] = byte
     else:
         countOfBits = len(rgBits)
-        rgBits_ = (c_ubyte * ((countObBits + 7)// 8))()
+        rgBits_ = (c_ubyte * ((countOfBits + 7)// 8))()
         index = 0
         byte = 0x00
         mask = 0x01
@@ -1585,7 +1585,7 @@ def FDwfDigitalOutDataSet(hdwf, idxChannel, rgBits, countOfBits=None):
                 mask = 0x01
                 byte = 0x00
                 index += 1
-        rbBits_[index] = byte
+        rgBits_[index] = byte
     return _FDwfDigitalOutDataSet(hdwf, idxChannel, rgBits_, countOfBits)
 # bits order is lsb first
 #  for TS output the count of bits its the total number of IO|OE bits,
@@ -1802,7 +1802,7 @@ class DwfDevice(object):
     CONFIGINFO_DIGITAL_OUT_BUFFER_SIZE = DECIDigitalOutBufferSize
     
     def __init__(self, idxDevice):
-        self.idxDeivce = idxDevice
+        self.idxDevice = idxDevice
     def deviceType(self):
         return FDwfEnumDeviceType(self.idxDevice)
     def isOpened(self):
@@ -1810,7 +1810,7 @@ class DwfDevice(object):
     def userName(self):
         return FDwfEnumUserName(self.idxDevice)
     def deviceName(self):
-        return FDwfEnumDeviceName(self.idxDeivce)
+        return FDwfEnumDeviceName(self.idxDevice)
     def SN(self):
         return FDwfEnumSN(self.idxDevice)
     def config(self):
@@ -1868,7 +1868,7 @@ class Dwf(object):
         if isinstance(idxDevice, Dwf):
             raise Exception()
         if isinstance(idxDevice, DwfDevice):
-            idxDevice = idxDeivce.idxDeivce
+            idxDevice = idxDevice.idxDevice
         if idxCfg is None:
             hdwf = FDwfDeviceOpen(idxDevice)
         else:
@@ -1943,17 +1943,17 @@ class DwfAnalogIn(Dwf):
         return FDwfAnalogInStatusIndexWrite(self.hdwf)
     def statusAutotriggered(self):
         return FDwfAnalogInStatusAutoTriggered(self.hdwf)
-    def statusData(self, idxChannel):
-        return FDwfAnalogInStatusData(self.hdwf, idxChannel)
-    def statusNoise(self, idxChannel):
-        return FDwfAnalogInStatusNoise(self.hdwf, idxChannel)
+    def statusData(self, idxChannel, data_num):
+        return FDwfAnalogInStatusData(self.hdwf, idxChannel, data_num)
+    def statusNoise(self, idxChannel, data_num):
+        return FDwfAnalogInStatusNoise(self.hdwf, idxChannel, data_num)
     def statusSample(self, idxChannel):
         return FDwfAnalogInStatusSample(self.hdwf, idxChannel)
     def statusRecord(self):
         return FDwfAnalogInStatusRecord(self.hdwf)
-    def statusRecordLengthSet(self, length):
+    def recordLengthSet(self, length):
         return FDwfAnalogInRecordLengthSet(self.hdwf, length)
-    def statusRecordLengthGet(self):
+    def recordLengthGet(self):
         return FDwfAnalogInRecordLengthGet(self.hdwf)
 
 # Acquisition configuration:
@@ -2279,7 +2279,7 @@ class DwfAnalogOut(Dwf):
         if isinstance(idxDevice, Dwf):
             self.hdwf = idxDevice.hdwf
         else:
-            super(DwfAnalogIn, self).__init__(idxDevice, idxCfg)
+            super(DwfAnalogOut, self).__init__(idxDevice, idxCfg)
     def reset(self, idxChannel=-1, parent=False):
         if parent: super(DwfAnalogIn, self).reset()
         return FDwfAnalogOutReset(self.hdwf, idxChannel)
@@ -2313,7 +2313,7 @@ class DwfAnalogIO(Dwf):
     def configure(self):
         return FDwfAnalogIOConfigure(self.hdwf)
     def status(self):
-        return FDwfAnalogIOStatus(sef.hdwf)
+        return FDwfAnalogIOStatus(self.hdwf)
 
 # Configure:
     def enableInfo(self):
@@ -2364,19 +2364,19 @@ class DwfDigitalIO(Dwf):
         return FDwfDigitalIOStatus(self.hdwf)
 
 # Configure:
-    def enableInfo(self):
+    def outputEnableInfo(self):
         return FDwfDigitalIOOutputEnableInfo(self)
-    def enableSet(self, output_enable):
+    def outputEnableSet(self, output_enable):
         return FDwfDigitalIOOutputEnableSet(self.hdwf, output_enable)
-    def enableGet(self):
+    def outputEnableGet(self):
         return FDwfDigitalIOOutputEnableGet(self.hdwf)
     
     def outputInfo(self):
         return FDwfDigitalIOOutputInfo(self.hdwf)
     def outputSet(self, output):
-        return FDwfDigitalIOOutputSet(self, output)
+        return FDwfDigitalIOOutputSet(self.hdwf, output)
     def outputGet(self):
-        return FDwfDigitalIOOutputSet(self)
+        return FDwfDigitalIOOutputSet(self.hdwf)
 
     def inputInfo(self):
         return FDwfDigitalIOInputInfo(self.hdwf)
@@ -2420,8 +2420,18 @@ class DwfDigitalIn(Dwf):
         return FDwfDigitalInStatusIndexWrite(self.hdwf)
     def statusAutoTriggered(self):
         return FDwfDigitalInStatusAutoTriggered(self.hdwf)
-    def statusData(self, countOfDataBytes):
-        return FDwfDigitalInStatusData(self.hdwf, countOfDataBytes)
+    def statusData(self, count):
+        bit_width = self.sampleFormatGet()
+        countOfDataBytes = count * (bit_width // 8)
+        data = FDwfDigitalInStatusData(self.hdwf, countOfDataBytes)
+        if bit_width == 16:
+            data = [ (data[2*i+1] & 0xff) << 8 | (data[2*i] & 0xff)
+                     for i in range(len(data) // 2) ]
+        elif bit_width == 32:
+            data = [ (data[4*i+3] & 0xff) << 24 | ((data[4*i+2] & 0xff) << 16) |
+                     ((data[4*i+1] & 0xff) << 8) | (data[4*i] & 0xff)
+                     for i in range(len(data) // 4) ]
+        return data
     def statusRecord(self):
         return FDwfDigitalInStatusRecord(self.hdwf)
 
