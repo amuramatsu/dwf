@@ -1570,7 +1570,8 @@ def FDwfDigitalOutDataSet(hdwf, idxChannel, rgBits, countOfBits=None):
                 mask = 0x01
                 byte = 0x00
                 index += 1
-        rgBits_[index] = byte
+        if index != len(rgBits_):
+            rgBits_[index] = byte
     else:
         countOfBits = len(rgBits)
         rgBits_ = (c_ubyte * ((countOfBits + 7)// 8))()
@@ -1585,7 +1586,8 @@ def FDwfDigitalOutDataSet(hdwf, idxChannel, rgBits, countOfBits=None):
                 mask = 0x01
                 byte = 0x00
                 index += 1
-        rgBits_[index] = byte
+        if index != len(rgBits_):
+            rgBits_[index] = byte
     return _FDwfDigitalOutDataSet(hdwf, idxChannel, rgBits_, countOfBits)
 # bits order is lsb first
 #  for TS output the count of bits its the total number of IO|OE bits,
@@ -1606,7 +1608,7 @@ def create_bitdata_stream(data, bits, msb_first=False):
             else:
                 mask = 1 << i
             result.append((v & mask) != 0)
-    return data
+    return result
 def create_bus_bitdata_streams(data, bits):
     result = []
     for i in range(bits):
