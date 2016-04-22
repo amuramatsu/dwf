@@ -34,9 +34,9 @@ dwf_ao.nodeOffsetSet(CHANNEL, dwf_ao.NODE_CARRIER, 1.0)
 
 dwf_ao.nodeEnableSet(CHANNEL, dwf_ao.NODE_FM, True)
 dwf_ao.nodeFunctionSet(CHANNEL, dwf_ao.NODE_FM, dwf_ao.FUNC_RAMP_UP)
-dwf_ao.nodeFrequencySet(CHANNEL, dwf_ao.NODE_FM, 10e3)
-dwf_ao.nodeAmplitudeSet(CHANNEL, dwf_ao.NODE_FM, 1.0)
-dwf_ao.nodeOffsetSet(CHANNEL, dwf_ao.NODE_FM, 1.0)
+dwf_ao.nodeFrequencySet(CHANNEL, dwf_ao.NODE_FM, 1e3)
+dwf_ao.nodeAmplitudeSet(CHANNEL, dwf_ao.NODE_FM, 10.0) # modulation (%)
+dwf_ao.nodeOffsetSet(CHANNEL, dwf_ao.NODE_FM, 0.0)     # offset (%)
 
 print("Play sine wave for 10 seconds...")
 dwf_ao.configure(CHANNEL, True)
