@@ -1821,7 +1821,7 @@ class DwfDevice(object):
         return FDwfEnumConfigInfo(self.idxConfig, info)
     
     def open(self, config=None):
-        return Dwf(self.idxConfig, config=config)
+        return Dwf(self.idxDevice, idxCfg=config)
 
 class _HDwf(object):
     def __init__(self, hdwf):
@@ -1885,7 +1885,7 @@ class Dwf(object):
     def autoConfigureGet(self):
         return FDwfDeviceAutoConfigureGet(self.hdwf)
     def reset(self):
-        return FDwfDeviceReset(self)
+        return FDwfDeviceReset(self.hdwf)
     def enableSet(self, enable):
         return FDwfDeviceEnableSet(self.hdwf, enable)
     def triggerInfo(self):
