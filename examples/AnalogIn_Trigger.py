@@ -58,5 +58,3 @@ for iTrigger in range(100):
     print("Acquisition #" + str(iTrigger+1) + " average: " + str(dc) + "V")
 
 dwf_ai.close()
-
-

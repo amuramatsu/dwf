@@ -33,9 +33,9 @@ for i in range(60):
     # get system monitor readings
     deviceVoltage = dwf_aio.channelNodeStatus(2, 0)
     deviceCurrent = dwf_aio.channelNodeStatus(2, 1)
-    deviceTEmperature = dwf_aio.channelNodeStatus(2, 2)
-    print(str(deviceVoltage) + " V\t" + str(deviceCurrent) + " A\t " +
-          str(deviceTemperature) + "degC")
+    deviceTemperature = dwf_aio.channelNodeStatus(2, 2)
+    print("%.4f V\t%.4f A\t%.4fdegC" % (
+        deviceVoltage, deviceCurrent, deviceTemperature))
     
 #close the device
 dwf_aio.close()
