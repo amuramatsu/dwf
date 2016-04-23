@@ -32,11 +32,11 @@ dwf_ai.channelRangeSet(0, 5.0)
 
 #set up trigger
 dwf_ai.triggerAutoTimeoutSet(0.0) #disable auto trigger
-dwf_ai.triggerSourceSet(dwf_ai.TRIGSRC_DETECTOR_ANALOG_IN)
-dwf_ai.triggerTypeSet(dwf_ai.TRIGTYPE_EDGE)
+dwf_ai.triggerSourceSet(dwf_ai.TRIGSRC.DETECTOR_ANALOG_IN)
+dwf_ai.triggerTypeSet(dwf_ai.TRIGTYPE.EDGE)
 dwf_ai.triggerChannelSet(0)
 dwf_ai.triggerLevelSet(1.5) # 1.5V
-dwf_ai.triggerConditionSet(dwf_ai.TRIGCOND_RISING_POSITIVE)
+dwf_ai.triggerConditionSet(dwf_ai.TRIGCOND.RISING_POSITIVE)
 
 # wait at least 2 seconds with Analog Discovery for the offset to stabilize,
 # before the first reading after device open or offset/range change
@@ -48,7 +48,7 @@ for iTrigger in range(100):
     dwf_ai.configure(False, True)
 
     while True:
-        if dwf_ai.status(True) == dwf_ai.STATE_DONE:
+        if dwf_ai.status(True) == dwf_ai.STATE.DONE:
             break
         time.sleep(0.001)
 

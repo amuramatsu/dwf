@@ -40,8 +40,8 @@ print("   waiting to finish")
 
 while True:
     sts = dwf_ain.status(True)
-    print("STS VAL: " + str(sts) + " STS DONE: " + str(dwf_ain.STATE_DONE))
-    if sts == dwf_ain.STATE_DONE:
+    print("STS VAL : " + str(sts))
+    if sts == dwf_ain.STATE.DONE:
         break
     time.sleep(0.1)
 print("Acquisition finished")

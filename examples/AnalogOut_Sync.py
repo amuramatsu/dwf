@@ -24,20 +24,20 @@ dwf_ao = dwf.DwfAnalogOut()
 
 print("Generating sine wave...")
 # enable two channels
-dwf_ao.nodeEnableSet(0, dwf_ao.NODE_CARRIER, True)
-dwf_ao.nodeEnableSet(1, dwf_ao.NODE_CARRIER, True)
+dwf_ao.nodeEnableSet(0, dwf_ao.NODE.CARRIER, True)
+dwf_ao.nodeEnableSet(1, dwf_ao.NODE.CARRIER, True)
 # for second channel set master the first channel
 dwf_ao.masterSet(1, 0)
 # slave channel is controlled by the master channel
 # it is enough to set trigger, wait, run and repeat paramters for master channel
 
 # configure enabled channels
-dwf_ao.nodeFunctionSet(-1, dwf_ao.NODE_CARRIER, dwf_ao.FUNC_SINE)
-dwf_ao.nodeFrequencySet(-1, dwf_ao.NODE_CARRIER, 1000.0)
-dwf_ao.nodeAmplitudeSet(-1, dwf_ao.NODE_CARRIER, 1.0)
+dwf_ao.nodeFunctionSet(-1, dwf_ao.NODE.CARRIER, dwf_ao.FUNC.SINE)
+dwf_ao.nodeFrequencySet(-1, dwf_ao.NODE.CARRIER, 1000.0)
+dwf_ao.nodeAmplitudeSet(-1, dwf_ao.NODE.CARRIER, 1.0)
 
 #set phase for second channel
-dwf_ao.nodePhaseSet(1, dwf_ao.NODE_CARRIER, 180.0)
+dwf_ao.nodePhaseSet(1, dwf_ao.NODE.CARRIER, 180.0)
 
 print("Generating sine wave for 10 seconds...")
 # start signal generation, 

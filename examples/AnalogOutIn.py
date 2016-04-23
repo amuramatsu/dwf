@@ -30,10 +30,10 @@ hdwf = dwf.Dwf()
 
 print("Configure and start first analog out channel")
 dwf_ao = dwf.DwfAnalogOut(hdwf)
-dwf_ao.nodeEnableSet(0, dwf_ao.NODE_CARRIER, True)
+dwf_ao.nodeEnableSet(0, dwf_ao.NODE.CARRIER, True)
 print("1 = Sine wave")
-dwf_ao.nodeFunctionSet(0, dwf_ao.NODE_CARRIER, dwf_ao.FUNC_SINE)
-dwf_ao.nodeFrequencySet(0, dwf_ao.NODE_CARRIER, 3000.0)
+dwf_ao.nodeFunctionSet(0, dwf_ao.NODE.CARRIER, dwf_ao.FUNC.SINE)
+dwf_ao.nodeFrequencySet(0, dwf_ao.NODE.CARRIER, 3000.0)
 print()
 dwf_ao.configure(0, True)
 
@@ -48,11 +48,11 @@ print("Wait after first device opening the analog in offset to stabilize")
 time.sleep(2)
 
 print("Starting acquisition")
-dwf_ai.configure(1, True)
+dwf_ai.configure(True, True)
 
 print("   waiting to finish")
 while True:
-    if dwf_ai.status(True) == dwf_ai.STATE_DONE:
+    if dwf_ai.status(True) == dwf_ai.STATE.DONE:
         break
     time.sleep(0.1)
 print("   done")

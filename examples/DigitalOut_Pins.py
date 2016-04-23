@@ -42,13 +42,13 @@ dwf_do.counterSet(1, 3, 1)
 
 # 2kHz random on IO pin 2
 dwf_do.enableSet(2, True)
-dwf_do.typeSet(2, dwf_do.TYPE_RANDOM)
+dwf_do.typeSet(2, dwf_do.TYPE.RANDOM)
 dwf_do.dividerSet(2, int(hzSys / 2e3))
 
 rgdSamples = [0x00, 0xAA, 0x66, 0xFF]
 # 1kHz sample rate custom on IO pin 3
 dwf_do.enableSet(3, 1)
-dwf_do.typeSet(3, dwf_do.TYPE_CUSTOM)
+dwf_do.typeSet(3, dwf_do.TYPE.CUSTOM)
 dwf_do.dividerSet(3, int(hzSys / 1e3))
 dwf_do.dataSet(3, dwf.create_bitdata_stream(rgdSamples, 8))
 

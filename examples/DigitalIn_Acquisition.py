@@ -55,7 +55,7 @@ print("   waiting to finish")
 while True:
     sts = dwf_di.status(True)
     print("STS VAL: " + str(sts))
-    if sts == dwf_di.STATE_DONE:
+    if sts == dwf_di.STATE.DONE:
         break
     time.sleep(1)
 print("Acquisition finished")

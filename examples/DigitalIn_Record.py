@@ -37,7 +37,7 @@ dwf_do.configure(True)
 N_SAMPLES = 100000
 
 # in record mode samples after trigger are acquired only
-dwf_di.acquisitionModeSet(dwf_di.ACQMODE_RECORD)
+dwf_di.acquisitionModeSet(dwf_di.ACQMODE.RECORD)
 # sample rate = system frequency / divider, 100MHz/1000 = 100kHz
 dwf_di.dividerSet(1000)
 # 16bit per sample format
@@ -45,7 +45,7 @@ dwf_di.sampleFormatSet(16)
 # number of samples after trigger
 dwf_di.triggerPositionSet(N_SAMPLES)
 # trigger when all digital pins are low
-dwf_di.triggerSourceSet(dwf_di.TRIGSRC_DETECTOR_DIGITAL_IN)
+dwf_di.triggerSourceSet(dwf_di.TRIGSRC.DETECTOR_DIGITAL_IN)
 # trigger detector mask:   low &   high & ( rising | falling )
 dwf_di.triggerSet(0xFFFF,  0x0000, 0x0000, 0x0000)
 
@@ -60,9 +60,9 @@ fLost = False
 fCorrupted = False
 while cSamples < N_SAMPLES:
     sts = dwf_di.status(True)
-    if cSamples == 0 and sts in (dwf_di.STATE_CONFIG,
-                                 dwf_di.STATE_PREFILL,
-                                 dwf_di.STATE_ARMED):
+    if cSamples == 0 and sts in (dwf_di.STATE.CONFIG,
+                                 dwf_di.STATE.PREFILL,
+                                 dwf_di.STATE.ARMED):
         # acquisition not yet started.
         continue
     

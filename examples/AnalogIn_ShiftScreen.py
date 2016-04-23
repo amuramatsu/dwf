@@ -33,17 +33,17 @@ print("Preparing to read sample...")
 
 print("Generating sine wave...")
 dwf_ao = dwf.DwfAnalogOut(hdwf)
-dwf_ao.nodeEnableSet(0, dwf_ao.NODE_CARRIER, True)
-dwf_ao.nodeFunctionSet(0, dwf_ao.NODE_CARRIER, dwf_ao.FUNC_SINE)
-dwf_ao.nodeFrequencySet(0, dwf_ao.NODE_CARRIER, 1.0)
-dwf_ao.nodeAmplitudeSet(0, dwf_ao.NODE_CARRIER, 2.0)
+dwf_ao.nodeEnableSet(0, dwf_ao.NODE.CARRIER, True)
+dwf_ao.nodeFunctionSet(0, dwf_ao.NODE.CARRIER, dwf_ao.FUNC.SINE)
+dwf_ao.nodeFrequencySet(0, dwf_ao.NODE.CARRIER, 1.0)
+dwf_ao.nodeAmplitudeSet(0, dwf_ao.NODE.CARRIER, 2.0)
 dwf_ao.configure(0, True)
 
 #set up acquisition
 dwf_ai = dwf.DwfAnalogIn(hdwf)
 dwf_ai.channelEnableSet(0, True)
 dwf_ai.channelRangeSet(0, 5.0)
-dwf_ai.acquisitionModeSet(dwf_ai.ACQMODE_SCAN_SHIFT)
+dwf_ai.acquisitionModeSet(dwf_ai.ACQMODE.SCAN_SHIFT)
 dwf_ai.frequencySet(HZ_ACQ)
 dwf_ai.bufferSizeSet(N_SAMPLES)
 

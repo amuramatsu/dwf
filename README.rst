@@ -127,7 +127,7 @@ With this API, `example code`_ is translated to
   for i in range(4096): rgdSamples.append(2.0*i/4095-1)
   
   dwf_ao = dwf.DwfAnalogOut()
-  dwf_ao.nodeSet(0, dwf_ao.NODE_CARRIER, True)
-  dwf_ao.nodeFunctionSet(0, dwf_ao.NODE_CARRIER, dwf_ao.FUNC_CUSTOM)
-  dwf_ao.nodeDataSet(0, dwf_ao.NODE_CARRIER, rgdSamples)
+  dwf_ao.nodeSet(0, dwf_ao.NODE.CARRIER, True)
+  dwf_ao.nodeFunctionSet(0, dwf_ao.NODE.CARRIER, dwf_ao.FUNC.CUSTOM)
+  dwf_ao.nodeDataSet(0, dwf_ao.NODE.CARRIER, rgdSamples)
   ...

@@ -27,6 +27,7 @@ This code is tested with Waveforms SDK, October 12, 2015 version.
 import sys
 import os
 from ctypes import *
+from enum import IntEnum
 
 if sys.platform.startswith("win"):
     dwfdll = cdll.dwf
@@ -833,6 +834,7 @@ _define("FDwfAnalogOutModeGet",
         ((_ARGIN, "hdwf"), (_ARGIN, "idxChannel"), (_ARGOUT, "pmode"),))
 
 #  FDwfAnalogOutIdleInfo(HDWF hdwf, int idxChannel, int *pfsidle);
+# use IsBitSet
 _define("FDwfAnalogOutIdleInfo",
         (HDWF, c_int, POINTER(c_int),),
         ((_ARGIN, "hdwf"), (_ARGIN, "idxChannel"), (_ARGOUT, "pfsidle"),))
@@ -1771,44 +1773,56 @@ _define("FDwfEnumAnalogInFrequency",
 # Class-based APIs
 ##################
 
+def _make_set(value, enum):
+    result = []
+    for e in list(enum):
+        if IsBitSet(value, e.value):
+            result.append(e)
+    return frozenset(result)
+
 # DEVICE MANAGMENT FUNCTIONS
 # Enumeration:
-ENUMFILTER_ALL = enumfilterAll
-ENUMFILTER_EEXPLORER = enumfilterEExplorer
-ENUMFILTER_DISCOVERY = enumfilterDiscovery
+class ENUMFILTER(IntEnum):
+    ALL = enumfilterAll
+    EEXPLORER = enumfilterEExplorer
+    DISCOVERY = enumfilterDiscovery
 
-def DwfEnumeration(enumfilter=ENUMFILTER_ALL):
+def DwfEnumeration(enumfilter=ENUMFILTER.ALL):
     num = FDwfEnum(enumfilter)
     return tuple([ DwfDevice(i) for i in range(num) ])
 
 class DwfDevice(object):
-    DEVID_EEXPLORER = devidEExplorer
-    DEVID_DISCOVERY = devidDiscovery
+    class DEVID(IntEnum):
+        EEXPLORER = devidEExplorer
+        DISCOVERY = devidDiscovery
 
-    DEVVER_EEXPLORER_C = devverEExplorerC
-    DEVVER_EEXPLORER_E = devverEExplorerE
-    DEVVER_EEXPLORER_F = devverEExplorerF
-    DEVVER_DISCOVERY_A = devverDiscoveryA
-    DEVVER_DISCOVERY_B = devverDiscoveryB
-    DEVVER_DISCOVERY_C = devverDiscoveryC
+    class DEVVER(IntEnum):
+        EEXPLORER_C = devverEExplorerC
+        EEXPLORER_E = devverEExplorerE
+        EEXPLORER_F = devverEExplorerF
+        DISCOVERY_A = devverDiscoveryA
+        DISCOVERY_B = devverDiscoveryB
+        DISCOVERY_C = devverDiscoveryC
 
-    CONFIGINFO_ANALOG_IN_CHANNEL_COUNT = DECIAnalogInChannelCount
-    CONFIGINFO_ANALOG_OUT_CHANNEL_COUNT = DECIAnalogOutChannelCount
-    CONFIGINFO_ANALOG_IO_CHANNEL_COUNT = DECIAnalogIOChannelCount
-    CONFIGINFO_DIGITAL_IN_CHANNEL_COUNT = DECIDigitalInChannelCount
-    CONFIGINFO_DIGITAL_OUT_CHANNEL_COUNT = DECIDigitalOutChannelCount
-    CONFIGINFO_DIGITAL_IO_CHANNEL_COUNT = DECIDigitalIOChannelCount
-    CONFIGINFO_ANALOG_IN_BUFFER_SIZE = DECIAnalogInBufferSize
-    CONFIGINFO_ANALOG_OUT_BUFFER_SIZE = DECIAnalogOutBufferSize
-    CONFIGINFO_DIGITAL_IN_BUFFER_SIZE = DECIDigitalInBufferSize
-    CONFIGINFO_DIGITAL_OUT_BUFFER_SIZE = DECIDigitalOutBufferSize
+    class CONFIGINFO(IntEnum):
+        ANALOG_IN_CHANNEL_COUNT = DECIAnalogInChannelCount
+        ANALOG_OUT_CHANNEL_COUNT = DECIAnalogOutChannelCount
+        ANALOG_IO_CHANNEL_COUNT = DECIAnalogIOChannelCount
+        DIGITAL_IN_CHANNEL_COUNT = DECIDigitalInChannelCount
+        DIGITAL_OUT_CHANNEL_COUNT = DECIDigitalOutChannelCount
+        DIGITAL_IO_CHANNEL_COUNT = DECIDigitalIOChannelCount
+        ANALOG_IN_BUFFER_SIZE = DECIAnalogInBufferSize
+        ANALOG_OUT_BUFFER_SIZE = DECIAnalogOutBufferSize
+        DIGITAL_IN_BUFFER_SIZE = DECIDigitalInBufferSize
+        DIGITAL_OUT_BUFFER_SIZE = DECIDigitalOutBufferSize
     
     def __init__(self, idxDevice):
         self.idxDevice = idxDevice
     def deviceType(self):
-        return FDwfEnumDeviceType(self.idxDevice)
+        devid, devver = FDwfEnumDeviceType(self.idxDevice)
+        return self.DEVID(devid), self.DEVVER(devver)
     def isOpened(self):
-        return FDwfEnumDeviceIsOpened(self.idxDevice)
+        return bool(FDwfEnumDeviceIsOpened(self.idxDevice))
     def userName(self):
         return FDwfEnumUserName(self.idxDevice)
     def deviceName(self):
@@ -1818,7 +1832,7 @@ class DwfDevice(object):
     def config(self):
         return FDwfEnumConfig(self.idxDevice)
     def configInfo(self, info):
-        return FDwfEnumConfigInfo(self.idxConfig, info)
+        return FDwfEnumConfigInfo(self.idxDevice, info)
     
     def open(self, config=None):
         return Dwf(self.idxDevice, idxCfg=config)
@@ -1839,32 +1853,34 @@ class _HDwf(object):
 class Dwf(object):
     DEVICE_NONE = hdwfNone
 
-# trigger source
-    TRIGSRC_NONE = trigsrcNone
-    TRIGSRC_PC = trigsrcPC
-    TRIGSRC_DETECTOR_ANALOG_IN = trigsrcDetectorAnalogIn
-    TRIGSRC_DETECTOR_DIGITAL_IN = trigsrcDetectorDigitalIn
-    TRIGSRC_ANALOG_IN = trigsrcAnalogIn
-    TRIGSRC_DIGITAL_IN = trigsrcDigitalIn
-    TRIGSRC_DIGITAL_OUT = trigsrcDigitalOut
-    TRIGSRC_ANALOG_OUT1 = trigsrcAnalogOut1
-    TRIGSRC_ANALOG_OUT2 = trigsrcAnalogOut2
-    TRIGSRC_ANALOG_OUT3 = trigsrcAnalogOut3
-    TRIGSRC_ANALOG_OUT4 = trigsrcAnalogOut4
-    TRIGSRC_EXTERNAL1 = trigsrcExternal1
-    TRIGSRC_EXTERNAL2 = trigsrcExternal2
-    TRIGSRC_EXTERNAL3 = trigsrcExternal3
-    TRIGSRC_EXTERNAL4 = trigsrcExternal4
+    class TRIGSRC(IntEnum):
+        '''trigger source'''
+        NONE = trigsrcNone
+        PC = trigsrcPC
+        DETECTOR_ANALOG_IN = trigsrcDetectorAnalogIn
+        DETECTOR_DIGITAL_IN = trigsrcDetectorDigitalIn
+        ANALOG_IN = trigsrcAnalogIn
+        DIGITAL_IN = trigsrcDigitalIn
+        DIGITAL_OUT = trigsrcDigitalOut
+        ANALOG_OUT1 = trigsrcAnalogOut1
+        ANALOG_OUT2 = trigsrcAnalogOut2
+        ANALOG_OUT3 = trigsrcAnalogOut3
+        ANALOG_OUT4 = trigsrcAnalogOut4
+        EXTERNAL1 = trigsrcExternal1
+        EXTERNAL2 = trigsrcExternal2
+        EXTERNAL3 = trigsrcExternal3
+        EXTERNAL4 = trigsrcExternal4
 
-# instrument states:
-    STATE_READY = DwfStateReady
-    STATE_CONFIG = DwfStateConfig
-    STATE_PREFILL = DwfStatePrefill
-    STATE_ARMED = DwfStateArmed
-    STATE_WAIT = DwfStateWait
-    STATE_TRIGGERED = DwfStateTriggered
-    STATE_RUNNING = DwfStateRunning
-    STATE_DONE = DwfStateDone
+    class STATE(IntEnum):
+        '''instrument states'''
+        READY = DwfStateReady
+        CONFIG = DwfStateConfig
+        PREFILL = DwfStatePrefill
+        ARMED = DwfStateArmed
+        WAIT = DwfStateWait
+        TRIGGERED = DwfStateTriggered
+        RUNNING = DwfStateRunning
+        DONE = DwfStateDone
     
     def __init__(self, idxDevice=-1, idxCfg=None):
         if isinstance(idxDevice, Dwf):
@@ -1883,46 +1899,51 @@ class Dwf(object):
     def autoConfigureSet(self, auto_configure):
         FDwfDeviceAutoConfigureSet(self.hdwf, auto_configure)
     def autoConfigureGet(self):
-        return FDwfDeviceAutoConfigureGet(self.hdwf)
+        return bool(FDwfDeviceAutoConfigureGet(self.hdwf))
     def reset(self):
         FDwfDeviceReset(self.hdwf)
     def enableSet(self, enable):
         FDwfDeviceEnableSet(self.hdwf, enable)
     def triggerInfo(self):
-        return FDwfDeviceTriggerInfo(self.hdwf)
+        return _make_set(FDwfDeviceTriggerInfo(self.hdwf), self.TRIGSRC)
     def triggerSet(self, idxPin, trigsrc):
         FDwfDeviceTriggerSet(self.hdwf, idxPin, trigsrc)
     def triggerGet(self, idxPin):
-        return FDwfDeviceTriggerGet(self.hdwf, idxPin)
+        return self.TRIGSRC(FDwfDeviceTriggerGet(self.hdwf, idxPin))
     def triggerPC(self):
         FDwfDeviceTriggerPC(self.hdwf)
 
 # ANALOG IN INSTRUMENT FUNCTIONS
 class DwfAnalogIn(Dwf):
-# acquisition modes:
-    ACQMODE_SINGLE = acqmodeSingle
-    ACQMODE_SCAN_SHIFT = acqmodeScanShift
-    ACQMODE_SCAN_SCREEN = acqmodeScanScreen
-    ACQMODE_RECORD = acqmodeRecord
+    class ACQMODE(IntEnum):
+        '''acquisition modes'''
+        SINGLE = acqmodeSingle
+        SCAN_SHIFT = acqmodeScanShift
+        SCAN_SCREEN = acqmodeScanScreen
+        RECORD = acqmodeRecord
 
-# analog acquisition filter:
-    FILTER_DECIMATE = filterDecimate
-    FILTER_AVERAGE = filterAverage
-    FILTER_MIN_MAX = filterMinMax
+    class FILTER(IntEnum):
+        '''analog acquisition filter'''
+        DECIMATE = filterDecimate
+        AVERAGE = filterAverage
+        MIN_MAX = filterMinMax
 
-# analog in trigger mode:
-    TRIGTYPE_EDGE = trigtypeEdge
-    TRIGTYPE_PULSE = trigtypePulse
-    TRIGTYPE_TRANSITION = trigtypeTransition
+    class TRIGTYPE(IntEnum):
+        '''analog in trigger mode'''
+        EDGE = trigtypeEdge
+        PULSE = trigtypePulse
+        TRANSITION = trigtypeTransition
 
-# analog in trigger condition
-    TRIGCOND_RISING_POSITIVE = trigcondRisingPositive
-    TRIGCOND_FALLING_NEGATIVE = trigcondFallingNegative
+    class TRIGCOND(IntEnum):
+        '''analog in trigger condition'''
+        RISING_POSITIVE = trigcondRisingPositive
+        FALLING_NEGATIVE = trigcondFallingNegative
 
-# analog in trigger length condition
-    TRIGLEN_LESS = triglenLess
-    TRIGLEN_TIMEOUT = triglenTimeout
-    TRIGLEN_MORE = triglenMore
+    class TRIGLEN(IntEnum):
+        '''analog in trigger length condition'''
+        LESS = triglenLess
+        TIMEOUT = triglenTimeout
+        MORE = triglenMore
     
 # Control and status:
     def __init__(self, idxDevice=-1, idxCfg=None):
@@ -1936,7 +1957,7 @@ class DwfAnalogIn(Dwf):
     def configure(self, reconfigure, start):
         FDwfAnalogInConfigure(self.hdwf, reconfigure, start)
     def status(self, read_data):
-        return FDwfAnalogInStatus(self.hdwf, read_data)
+        return self.STATE(FDwfAnalogInStatus(self.hdwf, read_data))
     def statusSamplesLeft(self):
         return FDwfAnalogInStatusSamplesLeft(self.hdwf)
     def statusSamplesValid(self):
@@ -1944,7 +1965,7 @@ class DwfAnalogIn(Dwf):
     def statusIndexWrite(self):
         return FDwfAnalogInStatusIndexWrite(self.hdwf)
     def statusAutotriggered(self):
-        return FDwfAnalogInStatusAutoTriggered(self.hdwf)
+        return bool(FDwfAnalogInStatusAutoTriggered(self.hdwf))
     def statusData(self, idxChannel, data_num):
         return FDwfAnalogInStatusData(self.hdwf, idxChannel, data_num)
     def statusNoise(self, idxChannel, data_num):
@@ -1982,12 +2003,12 @@ class DwfAnalogIn(Dwf):
         return FDwfAnalogInNoiseSizeGet(self.hdwf)
 
     def acquisitionModeInfo(self):
-        '''use IsBitSet'''
-        return FDwfAnalogInAcquisitionModeInfo(self.hdwf)
+        return _make_set(
+            FDwfAnalogInAcquisitionModeInfo(self.hdwf), self.ACQ_MODE)
     def acquisitionModeSet(self, acqmode):
         FDwfAnalogInAcquisitionModeSet(self.hdwf, acqmode)
     def acquisitionModeGet(self):
-        return FDwfAnalogInAcquisitionModeGet(self.hdwf)
+        return self.ACQ_MODE(FDwfAnalogInAcquisitionModeGet(self.hdwf))
 
 # Channel configuration:
     def channelCount(self):
@@ -1995,14 +2016,13 @@ class DwfAnalogIn(Dwf):
     def channelEnableSet(self, idxChannel, enable):
         FDwfAnalogInChannelEnableSet(self.hdwf, idxChannel, enable)
     def channelEnableGet(self, idxChannel):
-        return FDwfAnalogInChannelEnableGet(self.hdwf, idxChannel)
+        return bool(FDwfAnalogInChannelEnableGet(self.hdwf, idxChannel))
     def channelFilterInfo(self):
-        '''use IsBitSet'''
-        return FDwfAnalogInChannelFilterInfo(self.hdwf)
+        return _make_set(FDwfAnalogInChannelFilterInfo(self.hdwf), self.FILTER)
     def channelFilterSet(self, idxChannel, filter_):
         FDwfAnalogInChannelFilterSet(self.hdwf, idxChannel, filter_)
     def channelFilterGet(self, idxChannel):
-        return FDwfAnalogInChannelFilterGet(self.hdwf, idxChannel)
+        return self.FILTER(FDwfAnalogInChannelFilterGet(self.hdwf, idxChannel))
     def channelRangeInfo(self):
         return FDwfAnalogInChannelRangeInfo(self.hdwf)
     def channelRangeSteps(self):
@@ -2024,12 +2044,11 @@ class DwfAnalogIn(Dwf):
 
 # Trigger configuration:
     def triggerSourceInfo(self):
-        '''use IsBitSet'''
-        return FDwfAnalogInTriggerSourceInfo(self.hdwf)
+        return _make_set(FDwfAnalogInTriggerSourceInfo(self.hdwf), self.TRIGSRC)
     def triggerSourceSet(self, trigsrc):
         FDwfAnalogInTriggerSourceSet(self.hdwf, trigsrc)
     def triggerSourceGet(self):
-        return FDwfAnalogInTriggerSourceGet(self.hdwf)
+        return self.TRIGSRC(FDwfAnalogInTriggerSourceGet(self.hdwf))
 
     def triggerPositionInfo(self):
         return FDwfAnalogInTriggerPositionInfo(self.hdwf)
@@ -2055,12 +2074,11 @@ class DwfAnalogIn(Dwf):
         return FDwfAnalogInTriggerHoldOffGet(self.hdwf)
 
     def triggerTypeInfo(self):
-        '''use IsBitSet'''
-        return FDwfAnalogInTriggerTypeInfo(self.hdwf)
+        return _make_set(FDwfAnalogInTriggerTypeInfo(self.hdwf), self.TRIGTYPE)
     def triggerTypeSet(self, trigtype):
         FDwfAnalogInTriggerTypeSet(self.hdwf, trigtype)
     def triggerTypeGet(self):
-        return FDwfAnalogInTriggerTypeGet(self.HDWF)
+        return self.TRIGTYPE(FDwfAnalogInTriggerTypeGet(self.hdwf))
 
     def triggerChannelInfo(self):
         return FDwfAnalogInTriggerChannelInfo(self.hdwf)
@@ -2070,12 +2088,11 @@ class DwfAnalogIn(Dwf):
         return FDwfAnalogInTriggerChannelGet(self.hdwf)
 
     def triggerFilterInfo(self):
-        '''use IsBitSet'''
-        return FDwfAnalogInTriggerFilterInfo(self.hdwf)
+        return _make_set(FDwfAnalogInTriggerFilterInfo(self.hdwf), self.FILTER)
     def triggerFilterSet(self, filter_):
         FDwfAnalogInTriggerFilterSet(self.hdwf, filter_)
     def triggerFilterGet(self):
-        return FDwfAnalogInTriggerFilterGet(self.hdwf)
+        return self.FILTER(FDwfAnalogInTriggerFilterGet(self.hdwf))
 
     def triggerLevelInfo(self):
         return FDwfAnalogInTriggerLevelInfo(self.hdwf)
@@ -2092,12 +2109,12 @@ class DwfAnalogIn(Dwf):
         return FDwfAnalogInTriggerHysteresisGet(self.hdwf)
 
     def triggerConditionInfo(self):
-        '''use IsBitSet'''
-        return FDwfAnalogInTriggerConditionInfo(self.hdwf)
+        return _make_set(
+            FDwfAnalogInTriggerConditionInfo(self.hdwf), self.TRIGCOND)
     def triggerConditionSet(self, trigcond):
         FDwfAnalogInTriggerConditionSet(self.hdwf, trigcond)
     def triggerConditionGet(self):
-        return FDwfAnalogInTriggerConditionGet(self.hdwf)
+        return self.TRIGCOND(FDwfAnalogInTriggerConditionGet(self.hdwf))
 
     def triggerLengthInfo(self):
         return FDwfAnalogInTriggerLengthInfo(self.hdwf)
@@ -2107,40 +2124,44 @@ class DwfAnalogIn(Dwf):
         return FDwfAnalogInTriggerLengthGet(self.hdwf)
 
     def triggerLengthConditionInfo(self):
-        '''use IsBitSet'''
-        return FDwfAnalogInTriggerLengthConditionInfo(self.hdwf)
+        return _make_set(
+            FDwfAnalogInTriggerLengthConditionInfo(self.hdwf), self.TRIGLEN)
     def triggerLengthConditionSet(self, triglen):
         FDwfAnalogInTriggerLengthConditionSet(self.hdwf, triglen)
     def triggerLengthConditionGet(self):
-        return FDwfAnalogInTriggerLengthConditionGet(self.hdwf)
+        return self.TRIGLEN(FDwfAnalogInTriggerLengthConditionGet(self.hdwf))
 
 
 # ANALOG OUT INSTRUMENT FUNCTIONS
 class DwfAnalogOut(Dwf):
-# analog out signal types
-    FUNC_DC = funcDC
-    FUNC_SINE = funcSine
-    FUNC_SQUARE = funcSquare
-    FUNC_TRIANGLE = funcTriangle
-    FUNC_RAMP_UP = funcRampUp
-    FUNC_RAMP_DOWN = funcRampDown
-    FUNC_NOISE = funcNoise
-    FUNC_CUSTOM = funcCustom
-    FUNC_PLAY = funcPlay
+    class FUNC(IntEnum):
+        '''analog out signal types'''
+        DC = funcDC
+        SINE = funcSine
+        SQUARE = funcSquare
+        TRIANGLE = funcTriangle
+        RAMP_UP = funcRampUp
+        RAMP_DOWN = funcRampDown
+        NOISE = funcNoise
+        CUSTOM = funcCustom
+        PLAY = funcPlay
 
-    NODE_CARRIER = AnalogOutNodeCarrier
-    NODE_FM = AnalogOutNodeFM
-    NODE_AM = AnalogOutNodeAM
+    class NODE(IntEnum):
+        CARRIER = AnalogOutNodeCarrier
+        FM = AnalogOutNodeFM
+        AM = AnalogOutNodeAM
 
-    MODE_VOLTAGE = DwfAnalogOutModeVoltage
-    MODE_CURRENT = DwfAnalogOutModeCurrent
+    class MODE(IntEnum):
+        VOLTAGE = DwfAnalogOutModeVoltage
+        CURRENT = DwfAnalogOutModeCurrent
 
-    IDLE_DISABLE = DwfAnalogOutIdleDisable
-    IDLE_OFFSET = DwfAnalogOutIdleOffset
-    IDLE_INITIAL = DwfAnalogOutIdleInitial
+    class IDLE(IntEnum):
+        DISABLE = DwfAnalogOutIdleDisable
+        OFFSET = DwfAnalogOutIdleOffset
+        INITIAL = DwfAnalogOutIdleInitial
     
 # Configuration:
-    def channelCount(self): #XXX
+    def channelCount(self): # changed names
         return FDwfAnalogOutCount(self.hdwf)
 
     def masterSet(self, idxChannel, idxMaster):
@@ -2149,12 +2170,13 @@ class DwfAnalogOut(Dwf):
         return FDwfAnalogOutMasterGet(self.hdwf, idxChannel)
 
     def triggerSourceInfo(self, idxChannel):
-        '''use IsBitSet'''
-        return FDwfAnalogOutTriggerSourceInfo(self.hdwf, idxChannel)
+        return _make_set(
+            FDwfAnalogOutTriggerSourceInfo(self.hdwf, idxChannel), self.TRIGSRC)
     def triggerSourceSet(self, idxChannel, trigsrc):
         FDwfAnalogOutTriggerSourceSet(self.hdwf, idxChannel, trigsrc)
     def triggerSourceGet(self, idxChannel):
-        return FDwfAnalogOutTriggerSourceGet(self.hdwf, idxChannel)
+        return self.TRIGSRC(
+            FDwfAnalogOutTriggerSourceGet(self.hdwf, idxChannel))
 
     def runInfo(self, idxChannel):
         return FDwfAnalogOutRunInfo(self.hdwf, idxChannel)
@@ -2184,7 +2206,7 @@ class DwfAnalogOut(Dwf):
     def repeatTriggerSet(self, idxChannel, repeat_trigger):
         FDwfAnalogOutRepeatTriggerSet(self.hdwf, idxChannel, repeat_trigger)
     def repeatTriggerGet(self, idxChannel):
-        return FDwfAnalogOutRepeatTriggerGet(self.hdwf, idxChannel)
+        return bool(FDwfAnalogOutRepeatTriggerGet(self.hdwf, idxChannel))
 
     # EExplorer channel 3&4 current/voltage limitation
     def limitationInfo(self, idxChannel):
@@ -2197,31 +2219,35 @@ class DwfAnalogOut(Dwf):
     def modeSet(self, idxChannel, mode):
         FDwfAnalogOutModeSet(self.hdwf, idxChannel, mode)
     def modeGet(self, idxChannel):
-        return FDwfAnalogOutModeGet(self.hdwf, idxChannel)
+        return self.MODE(FDwfAnalogOutModeGet(self.hdwf, idxChannel))
 
     def idleInfo(self, idxChannel):
-        return FDwfAnalogOutIdleInfo(self.hdwf, idxChannel)
+        return _make_set(
+            FDwfAnalogOutIdleInfo(self.hdwf, idxChannel), self.IDLE)
     def idleSet(self, idxChannel, idle):
         FDwfAnalogOutIdleSet(self.hdwf, idxChannel, idle)
     def idleGet(self, idxChannel):
-        return FDwfAnalogOutIdleGet(self.hdwf, idxChannel)
+        return self.IDLE(FDwfAnalogOutIdleGet(self.hdwf, idxChannel))
 
     def nodeInfo(self, idxChannel):
         '''use IsBitSet'''
-        return FDwfAnalogOutNodeInfo(self.hdwf, idxChannel)
+        return _make_set(
+            FDwfAnalogOutNodeInfo(self.hdwf, idxChannel), self.NODE)
 
     def nodeEnableSet(self, idxChannel, node, enable):
         FDwfAnalogOutNodeEnableSet(self.hdwf, idxChannel, node, enable)
     def nodeEnableGet(self, idxChannel, node):
-        return FDwfAnalogOutNodeEnableGet(self.hdwf, idxChannel, node)
+        return bool(FDwfAnalogOutNodeEnableGet(self.hdwf, idxChannel, node))
 
     def nodeFunctionInfo(self, idxChannel, node):
-        '''use IsBitSet'''
-        return FDwfAnalogOutNodeFunctionInfo(self.hdwf, idxChannel, node)
+        return _make_set(
+            FDwfAnalogOutNodeFunctionInfo(self.hdwf, idxChannel, node),
+            self.FUNC)
     def nodeFunctionSet(self, idxChannel, node, func):
         FDwfAnalogOutNodeFunctionSet(self.hdwf, idxChannel, node, func)
     def nodeFunctionGet(self, idxChannel, node):
-        return FDwfAnalogOutNodeFunctionGet(self.hdwf, idxChannel, node)
+        return self.FUNC(
+            FDwfAnalogOutNodeFunctionGet(self.hdwf, idxChannel, node))
 
     def nodeFrequencyInfo(self, idxChannel, node):
         return FDwfAnalogOutNodeFrequencyInfo(self.hdwf, idxChannel, node)
@@ -2236,6 +2262,13 @@ class DwfAnalogOut(Dwf):
     def nodeAmplitudeSet(self, idxChannel, node, amplitude):
         FDwfAnalogOutNodeAmplitudeSet(self.hdwf, idxChannel, node, amplitude)
     def nodeAmplitudeGet(self, idxChannel, node):
+        return FDwfAnalogOutNodeAmplitudeSet(self.hdwf, idxChannel, node)
+
+    def nodeModulationInfo(self, idxChannel, node):
+        return FDwfAnalogOutNodeAmplitudeInfo(self, idxChannel, node)
+    def nodeModulationSet(self, idxChannel, node, modulation):
+        FDwfAnalogOutNodeAmplitudeSet(self.hdwf, idxChannel, node, modulation)
+    def nodeModulationGet(self, idxChannel, node):
         return FDwfAnalogOutNodeAmplitudeSet(self.hdwf, idxChannel, node)
 
     def nodeOffsetInfo(self, idxChannel, node):
@@ -2269,7 +2302,7 @@ class DwfAnalogOut(Dwf):
     def customAMFMEnableSet(self, idxChannel, enable):
         FDwfAnalogOutCustomAMFMEnableSet(self.hdwf, idxChannel, enable)
     def customAMFMEnableGet(self, idxChannel):
-        return FDwfAnalogOutCustomAMFMEnableGet(self.hdwf, idxChannel)
+        return bool(FDwfAnalogOutCustomAMFMEnableGet(self.hdwf, idxChannel))
 
 # Control:
     def __init__(self, idxDevice=-1, idxCfg=None):
@@ -2283,7 +2316,7 @@ class DwfAnalogOut(Dwf):
     def configure(self, idxChannel, start):
         FDwfAnalogOutConfigure(self.hdwf, idxChannel, start)
     def status(self, idxChannel):
-        return FDwfAnalogOutStatus(self.hdwf, idxChannel)
+        return self.STATE(FDwfAnalogOutStatus(self.hdwf, idxChannel))
     def nodePlayStatus(self, idxChannel, node):
         return FDwfAnalogOutNodePlayStatus(self.hdwf, idxChannel, node)
     def nodePlayData(self, idxChannel, node, rgdData):
@@ -2291,12 +2324,13 @@ class DwfAnalogOut(Dwf):
 
 # ANALOG IO INSTRUMENT FUNCTIONS
 class DwfAnalogIO(Dwf):
-# analog io channel node types
-    TYPE_ENABLE = analogioEnable
-    TYPE_VOLTAGE = analogioVoltage
-    TYPE_CURRENT = analogioCurrent
-    TYPE_POWER = analogioPower
-    TYPE_TEMPERATURE = analogioTemperature
+    class TYPE(IntEnum):
+        '''analog io channel node types'''
+        ENABLE = analogioEnable
+        VOLTAGE = analogioVoltage
+        CURRENT = analogioCurrent
+        POWER = analogioPower
+        TEMPERATURE = analogioTemperature
 
 # Control:
     def __init__(self, idxDevice=-1, idxCfg=None):
@@ -2314,13 +2348,13 @@ class DwfAnalogIO(Dwf):
 
 # Configure:
     def enableInfo(self):
-        return FDwfAnalogIOEnableInfo(self.hdwf)
+        return bool(FDwfAnalogIOEnableInfo(self.hdwf))
     def enableSet(self, master_enable):
         FDwfAnalogIOEnableSet(self.hdwf, master_enable)
     def enableGet(self):
-        return FDwfAnalogIOEnableGet(self.hdwf)
+        return bool(FDwfAnalogIOEnableGet(self.hdwf))
     def enableStatus(self):
-        return FDwfAnalogIOEnableStatus(self.hdwf)
+        return bool(FDwfAnalogIOEnableStatus(self.hdwf))
     
     def channelCount(self):
         return FDwfAnalogIOChannelCount(self.hdwf)
@@ -2332,7 +2366,8 @@ class DwfAnalogIO(Dwf):
     def channelNodeName(self, idxChannel, idxNode):
         return FDwfAnalogIOChannelNodeName(self.hdwf, idxChannel, idxNode)
     def channelNodeInfo(self, idxChannel, idxNode):
-        return FDwfAnalogIOChannelNodeInfo(self.hdwf, idxChannel, idxNode)
+        return self.TYPE(
+            FDwfAnalogIOChannelNodeInfo(self.hdwf, idxChannel, idxNode))
     def channelNodeSetInfo(self, dxChannel, idxNode):
         return FDwfAnalogIOChannelNodeSetInfo(self.hdwf, idxChannel, idxNode)
     def channelNodeSet(self, idxChannel, idxNode, value):
@@ -2382,19 +2417,22 @@ class DwfDigitalIO(Dwf):
 
 # DIGITAL IN INSTRUMENT FUNCTIONS
 class DwfDigitalIn(Dwf):
-# acquisition modes:
-    ACQMODE_SINGLE = acqmodeSingle
-    ACQMODE_SCAN_SHIFT = acqmodeScanShift
-    ACQMODE_SCAN_SCREEN = acqmodeScanScreen
-    ACQMODE_RECORD = acqmodeRecord
+    class ACQMODE(IntEnum):
+        '''acquisition modes'''
+        SINGLE = acqmodeSingle
+        SCAN_SHIFT = acqmodeScanShift
+        SCAN_SCREEN = acqmodeScanScreen
+        RECORD = acqmodeRecord
 
-    CLOCKSOURCE_INTERNAL = DwfDigitalInClockSourceInternal
-    CLOCKSOURCE_EXTERNAL = DwfDigitalInClockSourceExternal
+    class CLOCKSOURCE(IntEnum):
+        INTERNAL = DwfDigitalInClockSourceInternal
+        EXTERNAL = DwfDigitalInClockSourceExternal
 
-    SAMPLEMODE_SIMPLE = DwfDigitalInSampleModeSimple
-    # alternate samples: noise|sample|noise|sample|... 
-    # where noise is more than 1 transition between 2 samples
-    SAMPLEMODE_NOISE = DwfDigitalInSampleModeNoise
+    class SAMPLEMODE(IntEnum):
+        SIMPLE = DwfDigitalInSampleModeSimple
+        # alternate samples: noise|sample|noise|sample|... 
+        # where noise is more than 1 transition between 2 samples
+        NOISE = DwfDigitalInSampleModeNoise
     
 # Control and status:
     def __init__(self, idxDevice=-1, idxCfg=None):
@@ -2408,7 +2446,7 @@ class DwfDigitalIn(Dwf):
     def configure(self, reconfigure, start):
         return FDwfDigitalInConfigure(self.hdwf, reconfigure, start)
     def status(self, read_data):
-        return FDwfDigitalInStatus(self.hdwf, read_data)
+        return self.STATE(FDwfDigitalInStatus(self.hdwf, read_data))
     def statusSamplesLeft(self):
         return FDwfDigitalInStatusSamplesLeft(self.hdwf)
     def statusSamplesValid(self):
@@ -2416,7 +2454,7 @@ class DwfDigitalIn(Dwf):
     def statusIndexWrite(self):
         return FDwfDigitalInStatusIndexWrite(self.hdwf)
     def statusAutoTriggered(self):
-        return FDwfDigitalInStatusAutoTriggered(self.hdwf)
+        return bool(FDwfDigitalInStatusAutoTriggered(self.hdwf))
     def statusData(self, count):
         bit_width = self.sampleFormatGet()
         countOfDataBytes = count * (bit_width // 8)
@@ -2437,12 +2475,12 @@ class DwfDigitalIn(Dwf):
         return FDwfDigitalInInternalClockInfo(self.hdwf)
 
     def clockSourceInfo(self):
-        '''use IsBitSet'''
-        return FDwfDigitalInClockSourceInfo(self.hdwf)
+        return _make_set(
+            FDwfDigitalInClockSourceInfo(self.hdwf), self.CLOCKSOURCE)
     def clockSourceSet(self, clock_source):
         FDwfDigitalInClockSourceSet(self.hdwf, clock_source)
     def clockSourceGet(self, clock_source):
-        return FDwfDigitalInClockSourceGet(self.hdwf)
+        return self.CLOCKSOURCE(FDwfDigitalInClockSourceGet(self.hdwf))
 
     def dividerInfo(self):
         return FDwfDigitalInDividerInfo(self.hdwf)
@@ -2468,29 +2506,30 @@ class DwfDigitalIn(Dwf):
         return FDwfDigitalInBufferSizeGet(self.hdwf)
 
     def sampleModeInfo(self):
-        '''use IsBitSet'''
-        return FDwfDigitalInSampleModeInfo(self.hdwf)
+        return _make_set(
+            FDwfDigitalInSampleModeInfo(self.hdwf), self.SAMPLEMODE)
     def sampleModeSet(self, sample_mode):
         FDwfDigitalInSampleModeSet(self.hdwf, sample_mode)
     def sampleModeGet(self):
-        return FDwfDigitalInSampleModeGet(self.hdwf)
+        return self.SAMPLEMODE(FDwfDigitalInSampleModeGet(self.hdwf))
 
     def acquisitionModeInfo(self):
-        '''use IsBitSet'''
-        return FDwfDigitalInAcquisitionModeInfo(self.hdwf)
+        return _make_set(
+            FDwfDigitalInAcquisitionModeInfo(self.hdwf), self.ACQMODE)
     def acquisitionModeSet(self, acqmode):
         FDwfDigitalInAcquisitionModeSet(self.hdwf, acqmode)
     def acquisitionModeGet(self):
-        return FDwfDigitalInAcquisitionModeGet(self.hdwf)
+        return self.ACQMODE(FDwfDigitalInAcquisitionModeGet(self.hdwf))
 
 # Trigger configuration:
     def triggerSourceInfo(self):
         '''use IsBitSet'''
-        return FDwfDigitalInTriggerSourceInfo(self.hdwf)
+        return _make_set(
+            FDwfDigitalInTriggerSourceInfo(self.hdwf), self.TRIGSRC)
     def triggerSourceSet(self, trigsrc):
         FDwfDigitalInTriggerSourceSet(self.hdwf, trigsrc)
     def triggerSourceGet(self):
-        return FDwfDigitalInTriggerSourceGet(self.hdwf)
+        return self.TRIGSRC(FDwfDigitalInTriggerSourceGet(self.hdwf))
 
     def triggerPositionInfo(self):
         return FDwfDigitalInTriggerPositionInfo(self.hdwf)
@@ -2519,19 +2558,22 @@ class DwfDigitalIn(Dwf):
 # DIGITAL OUT INSTRUMENT FUNCTIONS
 class DwfDigitalOut(Dwf):
 
-    OUTPUT_PUSH_PULL = DwfDigitalOutOutputPushPull
-    OUTPUT_OPEN_DRAIN = DwfDigitalOutOutputOpenDrain
-    OUTPUT_OPEN_SOURCE = DwfDigitalOutOutputOpenSource
-    OUTPUT_TRISTATE = DwfDigitalOutOutputThreeState # for custom and random
+    class OUTPUT(IntEnum):
+        PUSH_PULL = DwfDigitalOutOutputPushPull
+        OPEN_DRAIN = DwfDigitalOutOutputOpenDrain
+        OPEN_SOURCE = DwfDigitalOutOutputOpenSource
+        TRISTATE = DwfDigitalOutOutputThreeState # for custom and random
 
-    TYPE_PULSE = DwfDigitalOutTypePulse
-    TYPE_CUSTOM = DwfDigitalOutTypeCustom
-    TYPE_RANDOM = DwfDigitalOutTypeRandom
+    class TYPE(IntEnum):
+        PULSE = DwfDigitalOutTypePulse
+        CUSTOM = DwfDigitalOutTypeCustom
+        RANDOM = DwfDigitalOutTypeRandom
 
-    IDLE_INIT = DwfDigitalOutIdleInit
-    IDLE_LOW = DwfDigitalOutIdleLow
-    IDLE_HIGH = DwfDigitalOutIdleHigh
-    IDLE_HiZ = DwfDigitalOutIdleZet
+    class IDLE(IntEnum):
+        INIT = DwfDigitalOutIdleInit
+        LOW = DwfDigitalOutIdleLow
+        HIGH = DwfDigitalOutIdleHigh
+        HiZ = DwfDigitalOutIdleZet
 
 # Control:
     def __init__(self, idxDevice=-1, idxCfg=None):
@@ -2543,21 +2585,21 @@ class DwfDigitalOut(Dwf):
         if parent: super(DwfDigitalOut, self).reset()
         return FDwfDigitalOutReset(self.hdwf)
     def configure(self, start):
-        return FDwfDigitalOutConfigure(self.hdwf, start)
+        FDwfDigitalOutConfigure(self.hdwf, start)
     def status(self):
-        return FDwfDigitalOutStatus(self.hdwf)
+        return self.STATE(FDwfDigitalOutStatus(self.hdwf))
 
 # Configuration:
     def internalClockInfo(self):
         return FDwfDigitalOutInternalClockInfo(self.hdwf)
 
     def triggerSourceInfo(self):
-        '''use IsBitSet'''
-        return FDwfDigitalOutTriggerSourceInfo(self.hdwf)
+        return _make_set(
+            FDwfDigitalOutTriggerSourceInfo(self.hdwf), self.TRIGSRC)
     def triggerSourceSet(self, trigsrc):
         FDwfDigitalOutTriggerSourceSet(self.hdwf, trigsrc)
     def triggerSourceGet(self, trigsrc):
-        return FDwfDigitalOutTriggerSourceGet(self.hdwf)
+        return self.TRIGSRC(FDwfDigitalOutTriggerSourceGet(self.hdwf))
 
     def runInfo(self):
         return FDwfDigitalOutRunInfo(self.hdwf)
@@ -2589,36 +2631,36 @@ class DwfDigitalOut(Dwf):
     def repeatTriggerGet(self):
         return FDwfDigitalOutRepeatTriggerGet(self.hdwf)
 
-    def channelCount(self): #XXX
+    def channelCount(self): #renamed
         return FDwfDigitalOutCount(self.hdwf)
     def enableSet(self, idxChannel, enable):
         FDwfDigitalOutEnableSet(self.hdwf, idxChannel, enable)
     def enableGet(self, idxChannel):
-        return FDwfDigitalOutEnableGet(self.hdwf, idxChannel)
+        return bool(FDwfDigitalOutEnableGet(self.hdwf, idxChannel))
 
     def outputInfo(self, idxChannel):
-        '''use IsBitSet'''
-        return FDwfDigitalOutOutputInfo(self.hdwf, idxChannel)
+        return _make_set(
+            FDwfDigitalOutOutputInfo(self.hdwf, idxChannel), self.OUTPUT)
     def outputSet(self, idxChannel, output_mode):
         FDwfDigitalOutOutputSet(self.hdwf, idxChannel, output_mode)
     def outputGet(self, idxChannel):
-        return FDwfDigitalOutOutputGet(self.hdwf, idxChannel)
+        return self.OUTPUT(FDwfDigitalOutOutputGet(self.hdwf, idxChannel))
 
     def typeInfo(self, idxChannel):
-        '''use IsBitSet'''
-        return FDwfDigitalOutTypeInfo(sef.hdwf, idxChannel)
+        return _make_set(
+            FDwfDigitalOutTypeInfo(sef.hdwf, idxChannel), self.TYPE)
     def typeSet(self, idxChannel, output_type):
         FDwfDigitalOutTypeSet(self.hdwf, idxChannel, output_type)
     def typeGet(self, idxChannel):
-        return FDwfDigitalOutTypeGet(self.hdwf, idxChannel)
+        return self.TYPE(FDwfDigitalOutTypeGet(self.hdwf, idxChannel))
 
     def idleInfo(self, idxChannel):
-        '''use IsBitSet'''
-        return FDwfDigitalOutIdleInfo(self.hdwf, idxChannel)
+        return _make_set(
+            FDwfDigitalOutIdleInfo(self.hdwf, idxChannel), self.IDLE)
     def idleSet(self, idxChannel, idle_mode):
         FDwfDigitalOutIdleSet(self.hdwf, idxChannel, idle_mode)
     def idleGet(self, idxChannel):
-        return FDwfDigitalOutIdleGet(self.hdwf, idxChannel)
+        return self.IDLE(FDwfDigitalOutIdleGet(self.hdwf, idxChannel))
 
     def dividerInfo(self, idxChannel):
         return FDwfDigitalOutDividerInfo(self.hdwf, idxChannel)
