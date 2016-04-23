@@ -33,6 +33,10 @@ setup(
 
         'License :: OSI Approved :: MIT License',
 
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: POSIX :: Linux',
+        'Operating System :: MacOS :: MacOS X',
+
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6', # Not tested
         'Programming Language :: Python :: 2.7',
@@ -41,6 +45,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',        
     ],
+    platforms="Linux,Mac,Windows",
     py_modules=['dwf'],
     use_2to3=False
 )
