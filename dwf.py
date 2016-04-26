@@ -2370,7 +2370,7 @@ class DwfAnalogIO(Dwf):
         if result == 0:
             return None
         return self.TYPE(result)
-    def channelNodeSetInfo(self, dxChannel, idxNode):
+    def channelNodeSetInfo(self, idxChannel, idxNode):
         return FDwfAnalogIOChannelNodeSetInfo(self.hdwf, idxChannel, idxNode)
     def channelNodeSet(self, idxChannel, idxNode, value):
         FDwfAnalogIOChannelNodeSet(self.hdwf, idxChannel, idxNode, value)
