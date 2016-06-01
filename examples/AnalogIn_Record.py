@@ -46,7 +46,7 @@ dwf_ai.recordLengthSet(N_SAMPLES / HZ_ACQ)
 time.sleep(2)
 
 #begin acquisition
-dwf_ai.configure(0, True)
+dwf_ai.configure(False, True)
 print("   waiting to finish")
 
 rgdSamples = []

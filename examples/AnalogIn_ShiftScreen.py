@@ -51,7 +51,7 @@ dwf_ai.bufferSizeSet(N_SAMPLES)
 time.sleep(2)
 
 #begin acquisition
-dwf_ai.configure(0, True)
+dwf_ai.configure(False, True)
 
 plt.axis([0, N_SAMPLES, -2.5, 2.5])
 plt.ion()
