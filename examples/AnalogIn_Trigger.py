@@ -31,7 +31,7 @@ dwf_ai.channelEnableSet(0, True)
 dwf_ai.channelRangeSet(0, 5.0)
 
 #set up trigger
-dwf_ai.triggerAutoTimeoutSet(0.0) #disable auto trigger
+dwf_ai.triggerAutoTimeoutSet() #disable auto trigger
 dwf_ai.triggerSourceSet(dwf_ai.TRIGSRC.DETECTOR_ANALOG_IN)
 dwf_ai.triggerTypeSet(dwf_ai.TRIGTYPE.EDGE)
 dwf_ai.triggerChannelSet(0)

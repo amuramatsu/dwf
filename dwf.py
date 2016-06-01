@@ -2061,7 +2061,7 @@ class DwfAnalogIn(Dwf):
 
     def triggerAutoTimeoutInfo(self):
         return FDwfAnalogInTriggerAutoTimeoutInfo(self.hdwf)
-    def triggerAutoTimeoutSet(self, secTimeout):
+    def triggerAutoTimeoutSet(self, secTimeout=0.0):
         FDwfAnalogInTriggerAutoTimeoutSet(self.hdwf, secTimeout)
     def triggerAutoTimeoutGet(self):
         return FDwfAnalogInTriggerAutoTimeoutGet(self.hdwf)
@@ -2542,7 +2542,7 @@ class DwfDigitalIn(Dwf):
 
     def triggerAutoTimeoutInfo(self):
         return FDwfDigitalInTriggerAutoTimeoutInfo(self.hdwf)
-    def triggerAutoTimeoutSet(self, secTimeout):
+    def triggerAutoTimeoutSet(self, secTimeout=0.0):
         FDwfDigitalInTriggerAutoTimeoutSet(self.hdwf, secTimeout)
     def triggerAutoTimeoutGet(self):
         return FDwfDigitalInTriggerAutoTimeoutGet(self.hdwf)
