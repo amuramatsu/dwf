@@ -2410,7 +2410,7 @@ class DwfDigitalIO(Dwf):
     def outputSet(self, output):
         FDwfDigitalIOOutputSet(self.hdwf, output)
     def outputGet(self):
-        return FDwfDigitalIOOutputSet(self.hdwf)
+        return FDwfDigitalIOOutputGet(self.hdwf)
 
     def inputInfo(self):
         return FDwfDigitalIOInputInfo(self.hdwf)
