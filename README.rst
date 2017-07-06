@@ -23,6 +23,21 @@ This software is released under the MIT License, see LICENSE.txt.
 .. _Digilent inc.: https://digilentinc.com/
 .. _Waveforms 2015: https://reference.digilentinc.com/waveforms3
 
+Installing
+==========
+
+You can install the latest stable version from PyPI:
+
+.. code:: bash
+
+  pip install dwf
+
+or if you prefer, install it from this repo like this:
+
+.. code:: bash
+
+  python setup.py install
+
 
 API of this library
 ===================
