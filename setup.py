@@ -17,7 +17,7 @@ if sys.version_info < (3, 4):
 
 setup(
     name='dwf',
-    version='0.1.0',
+    version='0.2.0.dev0',
     description="Digilent's DWF library wrapper",
     long_description=long_description,
     url='https://github.com/amuramatsu/dwf/',
@@ -46,6 +46,6 @@ setup(
         'Programming Language :: Python :: 3.5',        
     ],
     platforms="Linux,Mac,Windows",
-    py_modules=['dwf'],
+    packages=['dwf'],
     use_2to3=False
 )
