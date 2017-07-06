@@ -11,10 +11,6 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-requirements = []
-if sys.version_info < (3, 4):
-    requirements.append('enum34')
-
 setup(
     name='dwf',
     version='0.2.0.dev0',
@@ -24,7 +20,9 @@ setup(
     author='MURAMATSU Atsushi',
     author_email='amura@tomato.sakura.ne.jp',
     license='MIT',
-    install_requires=requirements,
+    install_requires=[
+        'enum34'
+    ],
     classifiers=[
         'Development Status :: 3 - Alpha',
         
