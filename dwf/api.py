@@ -35,7 +35,7 @@ from . import lowlevel as _l
 def _make_set(value, enum):
     result = []
     for e in list(enum):
-        if IsBitSet(value, e.value):
+        if _l.IsBitSet(value, e.value):
             result.append(e)
     return frozenset(result)
 
