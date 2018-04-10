@@ -35,7 +35,7 @@ from . import lowlevel as _l
 def _make_set(value, enum):
     result = []
     for e in list(enum):
-        if IsBitSet(value, e.value):
+        if _l.IsBitSet(value, e.value):
             result.append(e)
     return frozenset(result)
 
@@ -263,11 +263,11 @@ class DwfAnalogIn(Dwf):
 
     def acquisitionModeInfo(self):
         return _make_set(
-            _l.FDwfAnalogInAcquisitionModeInfo(self.hdwf), self.ACQ_MODE)
+            _l.FDwfAnalogInAcquisitionModeInfo(self.hdwf), self.ACQMODE)
     def acquisitionModeSet(self, acqmode):
         _l.FDwfAnalogInAcquisitionModeSet(self.hdwf, acqmode)
     def acquisitionModeGet(self):
-        return self.ACQ_MODE(_l.FDwfAnalogInAcquisitionModeGet(self.hdwf))
+        return self.ACQMODE(_l.FDwfAnalogInAcquisitionModeGet(self.hdwf))
 
 # Channel configuration:
     def channelCount(self):
