@@ -30,6 +30,10 @@ class SPIMaster(object):
             self._dev = _api.DwfDigitalIO(idxDevice, idxCfg)
         self.mode = mode
         self.freq = freq
+        if freq > 1e3:
+            self._wait = self._wait_dummy
+        else:
+            self._wait = self._wait_sleep
         self.lsb_first = lsb_first
         self.SCLK_bit = 1 << SCLK
         if SS is None:
@@ -44,14 +48,14 @@ class SPIMaster(object):
         self.readwrite = self._unsupported
         if MISO is not None:
             self.MISO_bit = 1 << MISO
-            self._bit_readwrite = _bit_readwrite_ronly
+            self._bit_readwrite = self._bit_readwrite_ronly
             if self.lsb_first:
                 self.read = self._read_lsbfirst
             else:
                 self.read = self._read_msbfirst
             if MOSI is not None:
                 self.MOSI_bit = 1 << MOSI
-                self._bit_readwrite = _bit_readwrite_both
+                self._bit_readwrite = self._bit_readwrite_both
                 if self.lsb_first:
                     self.write = self._write_lsbfirst
                     self.readwrite = self._readwrite_lsbfirst
@@ -60,7 +64,7 @@ class SPIMaster(object):
                     self.readwrite = self._readwrite_msbfirst
         elif MOSI is not None:
             self.MOSI_bit = 1 << MOSI
-            self._bit_readwrite = _bit_readwrite_wonly
+            self._bit_readwrite = self._bit_readwrite_wonly
             if self.lsb_first:
                 self.write = self._write_lsbfirst
             else:
@@ -77,19 +81,18 @@ class SPIMaster(object):
         
         enable = self._dev.outputEnableGet()
         self._dev.outputEnableSet((enable & ~input) | output)
-        
+
         self._set_mode(self.mode)
-        
-        self.end()
+        self.end(nowait=True)
 
     def _set_mode(self, mode):
-        if mode & SPIMode.POL_NEG != 0:
+        if (mode & SPIMode.POL_NEG) != 0:
             self._sclk_assert = self._sclk_neg
             self._sclk_negate = self._sclk_pos
         else:
             self._sclk_assert = self._sclk_pos
             self._sclk_negate = self._sclk_neg
-        if mode & SPIMode.PHA_SHIFT != 0:
+        if (mode & SPIMode.PHA_SHIFT) != 0:
             self._rw_onebit = self._rw_onebit_shift
         else:
             self._rw_onebit = self._rw_onebit_latch
@@ -110,7 +113,7 @@ class SPIMaster(object):
             self._buf &= ~self.MOSI_bit
         return (self._buf & self.MISO_bit) != 0
             
-    def _rw_onbit_shift(self, bit):
+    def _rw_onebit_shift(self, bit):
         self._buf = self._dev.outputGet()
         self._sclk_assert()
         self._dev.outputSet(self._buf)
@@ -124,7 +127,7 @@ class SPIMaster(object):
         
         return out
     
-    def _rw_onbit_latch(self, bit):
+    def _rw_onebit_latch(self, bit):
         self._buf = self._dev.outputGet()
         out = self._bit_readwrite(bit)
         self._sclk_assert()
@@ -208,19 +211,25 @@ class SPIMaster(object):
     def _unsupported(self, *args, **kwargs):
         raise NotImpelemented()
 
-    def _wait(self):
+    def _wait_sleep(self):
         time.sleep(0.5/self.freq)
     
-    def begin(self):
-        self._buf = self._dev.outputGet()
-        if self.SS_bit:
-            self._buf |= self.SS_bit
-        self._dev.outputSet(self._buf)
-
-    def end(self):
+    def _wait_dummy(self):
+        pass
+    
+    def begin(self, nowait=False):
         self._buf = self._dev.outputGet()
         if self.SS_bit:
             self._buf &= ~self.SS_bit
+        self._dev.outputSet(self._buf)
+        if not nowait:
+            self._wait()
+
+    def end(self, nowait=False):
+        self._buf = self._dev.outputGet()
+        if self.SS_bit:
+            self._buf |= self.SS_bit
         self._sclk_negate()
         self._dev.outputSet(self._buf)
-        
+        if not nowait:
+            self._wait()
