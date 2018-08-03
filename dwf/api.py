@@ -678,7 +678,7 @@ class DwfDigitalIO(Dwf):
     def outputSet(self, output):
         _l.FDwfDigitalIOOutputSet(self.hdwf, output)
     def outputGet(self):
-        return _l.FDwfDigitalIOOutputSet(self.hdwf)
+        return _l.FDwfDigitalIOOutputGet(self.hdwf)
 
     def inputInfo(self):
         return _l.FDwfDigitalIOInputInfo(self.hdwf)
